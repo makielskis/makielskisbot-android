@@ -1,0 +1,36 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity" >
+
+    <ToggleButton
+        android:id="@+id/toggleServiceBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:onClick="onToggleClicked" />
+
+    <ImageView
+        android:id="@+id/image_off"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:contentDescription="regular spaceinvader"
+        android:src="@drawable/invader_noglow" />
+
+    <ImageView
+        android:id="@+id/image_on"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:clickable="true"
+        android:contentDescription="glowing spaceinvader"
+        android:onClick="onInvaderClicked"
+        android:src="@drawable/invader_glow" />
+
+</RelativeLayout>
