@@ -1,0 +1,9 @@
+build_tools/build
+build_tools/android-boost
+build_tools/android-toolchain
+build_tools/android.toolchain.cmake
+
+local.properties
+.settings
+
+*.so

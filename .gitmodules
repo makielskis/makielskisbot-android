@@ -1,0 +1,3 @@
+[submodule "botscript-server"]
+	path = botscript-server
+	url = git@bitbucket.org:makielski/botscript-server.git
