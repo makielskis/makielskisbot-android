@@ -6,28 +6,22 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
+import android.support.v4.app.NotificationCompat;
 
 public class BotService extends Service {
 
 	private int notificationId = 123456;
 
-	private BotscriptServer nativeObject = new BotscriptServer();
-
-	private Thread runner = new Thread(new Runnable() {
-		@Override
-		public void run() {
-			nativeObject.start();
-		}
-	});
+	private BotscriptServer nativeObject = null;
 
 	@Override
 	public void onCreate() {
 		System.out.println("onCreate()");
-
+		
 		PendingIntent contentIntent = PendingIntent.getActivity(this, 0,
 				MainActivity.openUiIntent, 0);
 
-		Notification noti = new Notification.Builder(this)
+		Notification noti = new NotificationCompat.Builder(this)
 				.setSmallIcon(R.drawable.invader)
 				.setContentTitle("Makielski's BotScript")
 				.setContentText("Antippen um das Interface zu öffnen")
@@ -39,11 +33,13 @@ public class BotService extends Service {
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		System.out.println("onStartCommand()");
-		if (runner.isAlive()) {
-			nativeObject.stop();
-			stopSelf();
+		if (nativeObject == null) {
+			nativeObject = new BotscriptServer(getExternalFilesDir(null).getAbsolutePath());
+			nativeObject.start();
 		} else {
-			runner.start();
+			nativeObject.stop();
+			nativeObject = null;
+			stopSelf();
 		}
 
 		return START_STICKY;
