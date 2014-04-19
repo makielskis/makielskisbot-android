@@ -13,10 +13,15 @@ public class BotService extends Service {
 	private int notificationId = 123456;
 
 	private BotscriptServer nativeObject = null;
-
+	
+	public static boolean active = false;
+	
 	@Override
 	public void onCreate() {
 		System.out.println("onCreate()");
+		
+		Intent stopIntent = new Intent(getBaseContext(), BotService.class);
+		PendingIntent stopPendingIntent = PendingIntent.getService(getBaseContext(), 0, stopIntent, 0);
 		
 		PendingIntent contentIntent = PendingIntent.getActivity(this, 0,
 				MainActivity.openUiIntent, 0);
@@ -26,6 +31,7 @@ public class BotService extends Service {
 				.setContentTitle("Makielski's BotScript")
 				.setContentText("Antippen um das Interface zu öffnen")
 				.setContentIntent(contentIntent)
+				.addAction(android.R.drawable.ic_lock_power_off, "Bot abschalten", stopPendingIntent)
 				.build();
 		startForeground(notificationId, noti);
 	}
@@ -34,9 +40,11 @@ public class BotService extends Service {
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		System.out.println("onStartCommand()");
 		if (nativeObject == null) {
+			active = true;
 			nativeObject = new BotscriptServer(getExternalFilesDir(null).getAbsolutePath());
 			nativeObject.start();
 		} else {
+			active = false;
 			nativeObject.stop();
 			nativeObject = null;
 			stopSelf();
@@ -44,7 +52,7 @@ public class BotService extends Service {
 
 		return START_STICKY;
 	}
-
+	
 	@Override
 	public IBinder onBind(Intent intent) {
 		// no binding

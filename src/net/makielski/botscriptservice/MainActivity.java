@@ -1,9 +1,6 @@
 package net.makielski.botscriptservice;
 
 import android.app.Activity;
-import android.app.ActivityManager;
-import android.app.ActivityManager.RunningServiceInfo;
-import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -16,23 +13,82 @@ import android.widget.ToggleButton;
 
 public class MainActivity extends Activity {
 
-	public static final Intent openUiIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://makielski.net/mobileui"));
+	private static String uiLink = null;
+	public static Intent openUiIntent = null;
 	
-	ImageView glowInvader;
+	private static ImageView glowInvader;
+	
+	private Thread statePolling = new Thread(new Runnable() {
+		
+		Runnable uiUpdate = new Runnable() {
+			boolean firstRun = true;
+			boolean lastState = false;
+			
+			@Override
+			public void run() {
+				if (firstRun) {
+					firstRun = false;
+					return;
+				}
+				if (lastState != BotService.active) {
+					lastState = BotService.active;
+					ToggleButton toggleBtn = (ToggleButton) findViewById(R.id.toggleServiceBtn);
+					toggleBtn.setChecked(BotService.active);
+					if (BotService.active) {
+						Animation fadein = new AlphaAnimation(0.0f, 1.0f);
+						fadein.setDuration(800);
+						fadein.setFillAfter(true);
+						
+						glowInvader.setVisibility(View.VISIBLE);
+						glowInvader.startAnimation(fadein);
+					} else {
+						Animation fadeout = new AlphaAnimation(1.0f, 0.0f);
+						fadeout.setDuration(800);
+						fadeout.setFillAfter(true);
+						glowInvader.startAnimation(fadeout);
+					}
+				}
+			}
+		};
+		
+		@Override
+		public void run() {
+			while (true) {
+				System.out.println("checking status");
+				runOnUiThread(uiUpdate);
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					break;
+				}
+			}
+		}
+	});
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+		
+		uiLink = "http://makielski.net/ui/" + getString(R.string.uiversion) + "/";
+		openUiIntent =new Intent(Intent.ACTION_VIEW, Uri.parse(uiLink));
 
 		glowInvader = (ImageView) findViewById(R.id.image_on);
 		ToggleButton toggleBtn = (ToggleButton) findViewById(R.id.toggleServiceBtn);
 
-		boolean isRunning = isServiceRunning();
+		boolean isRunning = BotService.active;
 		toggleBtn.setChecked(isRunning);
 		if (!isRunning) {
 			glowInvader.setVisibility(View.INVISIBLE);
 		}
+		
+		statePolling.start();
+	}
+	
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		statePolling.interrupt();
 	}
 
 	@Override
@@ -43,44 +99,12 @@ public class MainActivity extends Activity {
 	}
 
 	public void onToggleClicked(View view) {
-		// Is the toggle on?
-		boolean on = ((ToggleButton) view).isChecked();
-		if (on) {
-			Intent startIntent = new Intent(this, BotService.class);
-			startIntent.setAction("net.makielski.botservice.start");
-			this.startService(startIntent);
-
-			Animation fadein = new AlphaAnimation(0.0f, 1.0f);
-			fadein.setDuration(800);
-			fadein.setFillAfter(true);
-			
-			glowInvader.setVisibility(View.VISIBLE);
-			glowInvader.startAnimation(fadein);
-		} else {
-			Intent stopIntent = new Intent(this, BotService.class);
-			stopIntent.setAction("net.makielski.botservice.stop");
-			this.startService(stopIntent);
-
-			Animation fadeout = new AlphaAnimation(1.0f, 0.0f);
-			fadeout.setDuration(800);
-			fadeout.setFillAfter(true);
-			glowInvader.startAnimation(fadeout);
-		}
+		Intent serviceIntent = new Intent(this, BotService.class);
+		this.startService(serviceIntent);
 	}
 	
 	public void onInvaderClicked(View view) {
 		startActivity(openUiIntent);
 	}
 
-	private boolean isServiceRunning() {
-		ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-		for (RunningServiceInfo service : manager
-				.getRunningServices(Integer.MAX_VALUE)) {
-			if (BotService.class.getName().equals(
-					service.service.getClassName())) {
-				return true;
-			}
-		}
-		return false;
-	}
 }
