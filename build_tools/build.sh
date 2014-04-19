@@ -19,3 +19,4 @@ cp build/libbotscript-server.so ../jni/libs/libbotscript-server.so;
 cd ..;
 ndk-build;
 ant clean release;
+mv bin/MainActivity-release.apk makielskisbot-0.0.0.apk

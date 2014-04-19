@@ -29,12 +29,9 @@ function prepareNDK() {
 }
 
 function prepareToolchain() {
-  # is compiler in PATH?
-  if hash arm-linux-androideabi-g++ 2>/dev/null; then
-    # get path to compiler
-    local path=$(command -v arm-linux-androideabi-g++);
-    TOOLCHAIN=${path%/*};
-    echo_bold "Toolchain found: '$TOOLCHAIN'";
+  # is toolchain in expected place?
+  if [ -f  $DIR/android-toolchain/bin/arm-linux-androideabi-g++ ] && [ -d  $DIR/android-toolchain/sysroot ]; then
+    echo_bold "Toolchain found.";
   else
     echo_bold "Toolchain not found. Creating one.";
 
@@ -44,10 +41,10 @@ function prepareToolchain() {
     # generate a toolchain with the NDK
     $NDK/build/tools/make-standalone-toolchain.sh --toolchain=arm-linux-androideabi-4.8 --install-dir=$DIR/android-toolchain;
 
-    # save path to toolchain
-    TOOLCHAIN_SYSROOT=$DIR/android-toolchain/sysroot;
-    TOOLCHAIN_BIN=$DIR/android-toolchain/bin;
   fi
+  # save path to toolchain
+  TOOLCHAIN_SYSROOT=$DIR/android-toolchain/sysroot;
+  TOOLCHAIN_BIN=$DIR/android-toolchain/bin;
 }
 
 function prepareBoost() {

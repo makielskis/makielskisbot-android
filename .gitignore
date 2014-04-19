@@ -1,3 +1,6 @@
+bin/
+gen/
+
 build_tools/build
 build_tools/android-boost
 build_tools/android-toolchain
